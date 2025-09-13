@@ -1,3 +1,41 @@
-fn main() {
-    println!("Hello, world!");
+use axum::{response::Html, routing::{get, post}, Router};
+use std::process::Command;
+
+async fn hello() -> Html<&'static str> {
+    Html("<h1>Hello World!</h1>")
+}
+
+async fn glitch_handler() -> Html<&'static str> {
+    // Command 1: ffgac
+    let output1 = Command::new("ffgac")
+        .args(["-i", "test.mov", "-an", "-vcodec", "mpeg2video", "-f", "rawvideo", "-y", "simple.mpv"])
+        .output();
+    
+    // Command 2: ffedit  
+    let output2 = Command::new("ffedit")
+        .args(["-i", "simple.mpv", "-f", "mv", "-s", "simple-glitch.js", "-o", "glitched.mpv"])
+        .output();
+    
+    // Command 3: ffmpeg
+    let output3 = Command::new("ffmpeg")
+        .args(["-i", "glitched.mpv", "-c:v", "libx264", "-pix_fmt", "yuv420p", "result.mov"])
+        .output();
+    
+    Html("<h1>Glitch commands executed!</h1>")
+}
+
+#[tokio::main]
+async fn main() {
+    let app = Router::new()
+        .route("/", get(hello))
+        .route("/glitch", post(glitch_handler));
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+        .await
+        .unwrap();
+    println!("Server running on http://localhost:3000");
+
+    axum::serve(listener, app)
+        .await
+        .unwrap();
 }
