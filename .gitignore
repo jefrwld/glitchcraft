@@ -46,3 +46,8 @@ Thumbs.db
 glitched-*
 prepared-*
 simple.*
+
+
+# Added by cargo
+
+/target
