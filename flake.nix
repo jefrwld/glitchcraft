@@ -17,12 +17,21 @@
           buildInputs = with pkgs; [
             ffmpeg-full
             ffglitch
+
+            #rust development
+            cargo
+            rustc
+            rust-analyzer
+            clippy
+            rustfmt
           ];
           
           shellHook = ''
             echo "=== FFglitch Art Environment ==="
             echo "FFmpeg: $(ffmpeg -version | head -n1)"
             echo "FFglitch: $(ffglitch --version 2>&1 || echo 'FFglitch available')"
+            echo "Rust: $(rustc --version)"
+            echo "Cargo: $(cargo --version)"
             echo "=========================="
           '';
         };
