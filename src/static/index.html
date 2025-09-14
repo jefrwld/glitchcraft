@@ -7,5 +7,25 @@
 
     <body>
         <h1>GlitchCraft</h1>
+        <button onclick="glitch()">Glitch this</button>
     </body>
+
+    <script>
+        async function glitch(){
+            console.log("Button clicked.")
+            const response = await fetch('/glitch', {
+                method: 'POST'
+            });
+
+            if(response.ok){
+                console.log('Glitch completed');
+            } else {
+                console.log('Glitch failed');
+            }
+        }
+
+
+    </script>
 </html>
+
+
