@@ -1,8 +1,15 @@
 use axum::{response::Html, routing::{get, post}, Router};
 use std::process::Command;
+use std::fs;
 
 async fn hello() -> Html<&'static str> {
     Html("<h1>Hello World!</h1>")
+}
+
+async fn serve_html() -> Html<String> {
+    let html_content = fs::read_to_string("src/static/index.html")
+        .expect("Could not find index.html");
+    Html(html_content)
 }
 
 async fn glitch_handler() -> Html<&'static str> {
@@ -27,7 +34,7 @@ async fn glitch_handler() -> Html<&'static str> {
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .route("/", get(hello))
+        .route("/", get(serve_html))
         .route("/glitch", post(glitch_handler));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
