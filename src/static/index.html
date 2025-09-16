@@ -9,10 +9,10 @@
         <h1>GlitchCraft</h1>
 
 
-        <form>
+        <form id="uploadForm" enctype="multipart/form-data">
             <div>
                 <label>Upload video:</label>
-                <input type="file" id="videoInput" accept="video/*">
+                <input type="file" id="videoInput" name="video" accept="video/*">
             </div>
             <button onclick="glitch(videoInput)">submit</button>
         </form>
@@ -21,8 +21,11 @@
     <script>
         async function glitch($video){
             console.log("Button clicked.")
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
             const response = await fetch('/glitch', {
-                method: 'POST'
+                method: 'POST',
+                body: formData
             });
 
             if(response.ok){

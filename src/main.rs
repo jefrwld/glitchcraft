@@ -1,10 +1,9 @@
-use axum::{response::Html, routing::{get, post}, Router};
+use axum::{http::StatusCode, response::Html, routing::{get, post}, Router};
 use axum::extract::Multipart;
 use axum::body::Bytes;
 use std::process::Command;
 use std::fs;
 use uuid::Uuid;
-
 
 
 async fn hello() -> Html<&'static str> {
@@ -17,7 +16,29 @@ async fn serve_html() -> Html<String> {
     Html(html_content)
 }
 
-async fn glitch_handler() -> Html<&'static str> {
+async fn glitch_handler(mut multipart: Multipart) -> Result<Html<&'static str>, StatusCode> {
+
+    while let Some(field) = multipart.next_field().await.map_err(|_| StatusCode::BAD_REQUEST)? {
+        if let Some(name) = field.name() {
+            if name == "video" {
+                match field.bytes().await {
+                    Ok(video_data) => {
+                        if let Err(_) = upload_file(video_data).await {
+                            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+                        }
+                        break;
+                    }
+                    Err(_) => return Err(StatusCode::BAD_REQUEST),
+                }
+            }
+        }
+
+        if field.name().unwrap() == "video" {
+            let video_data = field.bytes().await.unwrap();
+            upload_file(video_data).await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR);
+            break;
+        }
+    }
 
     // Command 1: ffgac
     let output1 = Command::new("ffgac")
@@ -34,17 +55,17 @@ async fn glitch_handler() -> Html<&'static str> {
         .args(["-i", "glitched.mpv", "-c:v", "libx264", "-pix_fmt", "yuv420p", "result.mov"])
         .output();
     
-    Html("<h1>Glitch commands executed!</h1>")
+    Ok(Html("<h1>Glitch commands executed!</h1>"))
 }
 
 async fn upload_file(video_data: Bytes) -> Result<(), String> {
 
     let filename = format!("{}.mp4", Uuid::new_v4());
-    let uplaod_path = format!("uploads/{}", filename);
+    let upload_path = format!("uploads/{}", filename);
     let video: Bytes = video_data;
 
     //write video
-    tokio::fs::write(&uplaod_path, &video).await
+    tokio::fs::write(&upload_path, &video).await
         .map_err(|e| format!("write file failed: {}", e))?;
     Ok(())
 }
