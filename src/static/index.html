@@ -7,11 +7,19 @@
 
     <body>
         <h1>GlitchCraft</h1>
-        <button onclick="glitch()">Glitch this</button>
+
+
+        <form>
+            <div>
+                <label>Upload video:</label>
+                <input type="file" id="videoInput" accept="video/*">
+            </div>
+            <button onclick="glitch(videoInput)">submit</button>
+        </form>
     </body>
 
     <script>
-        async function glitch(){
+        async function glitch($video){
             console.log("Button clicked.")
             const response = await fetch('/glitch', {
                 method: 'POST'

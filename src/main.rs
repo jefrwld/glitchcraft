@@ -1,6 +1,11 @@
 use axum::{response::Html, routing::{get, post}, Router};
+use axum::extract::Multipart;
+use axum::body::Bytes;
 use std::process::Command;
 use std::fs;
+use uuid::Uuid;
+
+
 
 async fn hello() -> Html<&'static str> {
     Html("<h1>Hello World!</h1>")
@@ -13,6 +18,7 @@ async fn serve_html() -> Html<String> {
 }
 
 async fn glitch_handler() -> Html<&'static str> {
+
     // Command 1: ffgac
     let output1 = Command::new("ffgac")
         .args(["-i", "test.mov", "-an", "-vcodec", "mpeg2video", "-f", "rawvideo", "-y", "simple.mpv"])
@@ -29,6 +35,18 @@ async fn glitch_handler() -> Html<&'static str> {
         .output();
     
     Html("<h1>Glitch commands executed!</h1>")
+}
+
+async fn upload_file(video_data: Bytes) -> Result<(), String> {
+
+    let filename = format!("{}.mp4", Uuid::new_v4());
+    let uplaod_path = format!("uploads/{}", filename);
+    let video: Bytes = video_data;
+
+    //write video
+    tokio::fs::write(&uplaod_path, &video).await
+        .map_err(|e| format!("write file failed: {}", e))?;
+    Ok(())
 }
 
 #[tokio::main]
