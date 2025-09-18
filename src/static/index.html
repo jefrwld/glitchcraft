@@ -14,24 +14,41 @@
                 <label>Upload video:</label>
                 <input type="file" id="videoInput" name="video" accept="video/*">
             </div>
-            <button onclick="glitch(videoInput)">submit</button>
+            <button type="button" onclick="glitch()">submit</button>
         </form>
     </body>
 
     <script>
-        async function glitch($video){
+        async function glitch(){
             console.log("Button clicked.")
+
+            const videoInput = document.getElementById('videoInput');
+            if (!videoInput.files || !videoInput.files[0]) {
+                alert('Please select a video file first');
+                return;
+            }
+
             const form = document.getElementById('uploadForm');
             const formData = new FormData(form);
-            const response = await fetch('/glitch', {
-                method: 'POST',
-                body: formData
-            });
+            console.log(formData);
 
-            if(response.ok){
-                console.log('Glitch completed');
-            } else {
-                console.log('Glitch failed');
+            try {
+                const response = await fetch('/glitch', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if(response.ok){
+                    console.log('Glitch completed');
+                    const result = await response.text();
+                    document.body.innerHTML += result;
+                } else {
+                    console.log('Glitch failed:', response.status);
+                    alert('Upload failed: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
             }
         }
 
